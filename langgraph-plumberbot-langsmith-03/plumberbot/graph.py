@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, START, END
 
-from .nodes import (
+from plumberbot.nodes import (
     classify_request,
     route_request,
     ask_missing_info,
@@ -9,7 +9,7 @@ from .nodes import (
     human_review,
     create_ticket,
 )
-from .state import PlumberState
+from plumberbot.state import PlumberState
 
 
 def build_graph():
