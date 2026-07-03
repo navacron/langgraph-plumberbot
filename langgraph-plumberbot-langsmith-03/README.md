@@ -260,22 +260,56 @@ python -m pytest tests/ -v
 
 ---
 
-## Deploying to LangSmith Cloud
+## Deployment options
 
-Requires a [LangSmith Plus plan](https://www.langchain.com/pricing).
+Three tiers — same CLI code works against all of them via `LANGGRAPH_URL`.
+
+### Tier 1 — Local dev server (free, already working)
 
 ```bash
-# Deploy
-langgraph deploy
+langgraph dev          # API at http://127.0.0.1:2024
+```
 
-# Copy the deployment URL printed by the command, then update .env:
-# LANGGRAPH_URL=https://<deployment-id>.us.langgraph.app
+In-memory only. State is lost when the server restarts. Good for development.
 
-# The CLI works identically against the cloud URL
+---
+
+### Tier 2 — Self-hosted Docker (free, production-like)
+
+Runs the real LangGraph Agent Server with durable Postgres + Redis — the same stack as production, running locally. This is what [langchain-academy module-6](https://github.com/langchain-ai/langchain-academy) uses.
+
+**Prerequisites:** Docker running, `LANGSMITH_API_KEY` set in `.env` (free account is fine).
+
+```bash
+# 1. Build the Docker image
+langgraph build -t plumberbot-image
+
+# 2. Start the stack (Redis + Postgres + API server)
+docker compose up
+
+# 3. Point the CLI at the Docker server
+# In .env: LANGGRAPH_URL=http://localhost:8123
+
+# 4. Run scenarios — same CLI, now with durable state
 python -m cli.main --scenario emergency
 ```
 
-LangSmith Cloud automatically replaces the local SQLite checkpointer with durable Postgres — no code changes needed.
+The `docker-compose.yml` in this repo wires up all three containers. Thread state now persists across server restarts.
+
+---
+
+### Tier 3 — LangSmith Cloud (paid — Plus plan required)
+
+```bash
+langgraph deploy
+
+# Copy the deployment URL, then set in .env:
+# LANGGRAPH_URL=https://<deployment-id>.us.langgraph.app
+
+python -m cli.main --scenario emergency
+```
+
+Requires a [LangSmith Plus plan](https://www.langchain.com/pricing) (~$39+/month). Fully managed — no Docker, no infrastructure. See [LangSmith deployment docs](https://docs.langchain.com/langsmith/deploy-to-cloud).
 
 ---
 
