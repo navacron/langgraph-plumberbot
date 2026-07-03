@@ -84,8 +84,7 @@ langgraph-plumberbot-langsmith-03/
   tests/
     test_routing.py      ← Pure route_request tests (no server needed)
   langgraph.json         ← Deployment config
-  requirements.txt       ← Server deps
-  requirements-client.txt← Client deps (langgraph-sdk)
+  pyproject.toml         ← All deps: base (server) + [dev] extras (cli, sdk, pytest)
 ```
 
 ---
@@ -99,20 +98,13 @@ cd langgraph-plumberbot-langsmith-03
 python -m venv .venv
 source .venv/bin/activate      # Windows: .venv\Scripts\activate
 
-# Server dependencies (graph + LangGraph Server)
-pip install -r requirements.txt
-pip install "langgraph-cli[inmem]"
+pip install -e ".[dev]"
 
-# Install the plumberbot package so relative imports resolve inside LangGraph Server
-pip install -e .
-
-# Client dependencies (SDK for the CLI)
-pip install -r requirements-client.txt
-
-# Configure credentials
 cp .env.example .env
 # Edit .env — set ANTHROPIC_API_KEY (and optionally LANGSMITH_API_KEY)
 ```
+
+The `[dev]` extra installs everything: the graph package (so LangGraph Server can resolve imports), the local dev server (`langgraph-cli[inmem]`), the HTTP client SDK (`langgraph-sdk`), and pytest. Base `dependencies` in `pyproject.toml` are what `langgraph deploy` installs in the cloud container.
 
 ---
 
