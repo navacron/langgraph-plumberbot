@@ -1,4 +1,4 @@
-# langgraph-plumberbot-hitl
+# langgraph-plumberbot-bare-01
 
 A minimal **LangGraph human-in-the-loop** portfolio project that demonstrates core LangGraph concepts through a realistic service-triage scenario.
 
@@ -48,7 +48,7 @@ flowchart TD
 
 ```bash
 git clone <this-repo>
-cd langgraph-plumberbot-hitl
+cd langgraph-plumberbot-bare-01
 
 # Create and activate a virtual environment
 python -m venv .venv
