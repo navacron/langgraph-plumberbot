@@ -6,4 +6,4 @@ from dotenv import load_dotenv
 load_dotenv()
 
 client = Anthropic()  # reads ANTHROPIC_API_KEY from env
-MODEL = os.getenv("ANTHROPIC_MODEL", "claude-opus-4-8")
+MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")

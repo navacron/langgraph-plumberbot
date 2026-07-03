@@ -277,7 +277,7 @@ python -m pytest tests/ -v
 
 ## Default model
 
-`claude-opus-4-8` — override via `ANTHROPIC_MODEL` in `.env`.
+`claude-sonnet-4-6` — override via `ANTHROPIC_MODEL` in `.env`.
 
 ---
 
