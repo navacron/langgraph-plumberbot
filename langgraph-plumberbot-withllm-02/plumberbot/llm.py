@@ -1,9 +1,9 @@
 import os
 
-from anthropic import Anthropic
 from dotenv import load_dotenv
+from langchain_anthropic import ChatAnthropic
 
 load_dotenv()
 
-client = Anthropic()  # reads ANTHROPIC_API_KEY from env
 MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+llm = ChatAnthropic(model=MODEL, temperature=0)

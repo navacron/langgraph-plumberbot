@@ -10,11 +10,11 @@ The graph **topology is unchanged**: same nodes, same edges, same `interrupt()`/
 
 | Node | bare-01 | withllm-02 |
 |---|---|---|
-| `classify_request` | regex + keyword matching | `client.messages.create()` with JSON schema output + adaptive thinking |
-| `ask_missing_info` | template string | `client.messages.create()` — generates warm, context-aware question |
-| `save_profile` | simple dict from keywords | `client.messages.parse()` — extracts structured `CustomerProfile` from free text |
-| `answer_faq` | static FAQ bullet list | `client.messages.create()` — natural language answer |
-| `create_ticket` | static response string | `client.messages.create()` — professional response based on decision |
+| `classify_request` | regex + keyword matching | `llm.with_structured_output(Classification)` — returns a typed `Classification` Pydantic model |
+| `ask_missing_info` | template string | `llm.invoke([SystemMessage, HumanMessage])` — generates warm, context-aware question |
+| `save_profile` | simple dict from keywords | `llm.with_structured_output(CustomerProfile)` — extracts structured profile from free text |
+| `answer_faq` | static FAQ bullet list | `llm.invoke([SystemMessage, HumanMessage])` — natural language answer |
+| `create_ticket` | static response string | `llm.invoke([SystemMessage, HumanMessage])` — professional response based on decision |
 | `human_review` | unchanged | unchanged (`interrupt()`, no LLM) |
 | `route_request` | unchanged | unchanged (pure function) |
 
@@ -57,36 +57,33 @@ flowchart TD
 
 ## How Claude is used
 
-### Classification — structured JSON output + adaptive thinking
+Follows the same patterns as [langchain-academy](https://github.com/langchain-ai/langchain-academy) — just swap `ChatOpenAI` for `ChatAnthropic`.
+
+### Client initialisation
 
 ```python
-response = client.messages.create(
-    model=MODEL,
-    max_tokens=4096,
-    thinking={"type": "adaptive"},          # model reasons before answering
-    system=CLASSIFY_SYSTEM,
-    messages=[{"role": "user", "content": customer_message}],
-    output_config={
-        "format": {
-            "type": "json_schema",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "category": {"type": "string", "enum": ["emergency", "general", "missing_info"]},
-                    "urgency_reason": {"type": "string"},
-                    "missing_fields": {"type": "array", "items": {"type": "string"}},
-                },
-                "required": ["category", "urgency_reason", "missing_fields"],
-                "additionalProperties": False,
-            },
-        }
-    },
-)
-text_block = next(b for b in response.content if b.type == "text")
-data = json.loads(text_block.text)
+from langchain_anthropic import ChatAnthropic
+
+llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0)
 ```
 
-### Profile extraction — Pydantic structured output
+### Classification — `with_structured_output(PydanticModel)`
+
+```python
+class Classification(BaseModel):
+    category: Literal["emergency", "general", "missing_info"]
+    urgency_reason: str = Field(default="")
+    missing_fields: list[str] = Field(default_factory=list)
+
+structured_llm = llm.with_structured_output(Classification)
+result: Classification = structured_llm.invoke([
+    SystemMessage(content=CLASSIFY_SYSTEM),
+    HumanMessage(content=state["customer_message"]),
+])
+# result.category, result.urgency_reason, result.missing_fields
+```
+
+### Profile extraction — same pattern, different schema
 
 ```python
 class CustomerProfile(BaseModel):
@@ -96,14 +93,21 @@ class CustomerProfile(BaseModel):
     issue_description: str = Field(default="")
     water_actively_leaking: bool = Field(default=False)
 
-extraction = client.messages.parse(
-    model=MODEL,
-    max_tokens=1024,
-    system="Extract customer contact and issue details.",
-    messages=[{"role": "user", "content": customer_reply}],
-    output_format=CustomerProfile,          # validated Pydantic instance
-)
-data: CustomerProfile = extraction.parsed_output
+structured_llm = llm.with_structured_output(CustomerProfile)
+data: CustomerProfile = structured_llm.invoke([
+    SystemMessage(content="Extract customer contact and issue details."),
+    HumanMessage(content=state["customer_reply"]),
+])
+```
+
+### Text generation — plain `.invoke()`
+
+```python
+response = llm.invoke([
+    SystemMessage(content=FAQ_SYSTEM),
+    HumanMessage(content=state["customer_message"]),
+])
+return {"final_response": response.content}
 ```
 
 ---
