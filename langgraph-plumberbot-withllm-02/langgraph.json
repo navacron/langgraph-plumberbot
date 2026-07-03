@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "plumberbot": "./plumberbot/graph.py:graph"
+  },
+  "env": ".env"
+}
