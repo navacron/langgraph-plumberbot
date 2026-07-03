@@ -101,7 +101,10 @@ source .venv/bin/activate      # Windows: .venv\Scripts\activate
 
 # Server dependencies (graph + LangGraph Server)
 pip install -r requirements.txt
-pip install langgraph-cli
+pip install "langgraph-cli[inmem]"
+
+# Install the plumberbot package so relative imports resolve inside LangGraph Server
+pip install -e .
 
 # Client dependencies (SDK for the CLI)
 pip install -r requirements-client.txt
