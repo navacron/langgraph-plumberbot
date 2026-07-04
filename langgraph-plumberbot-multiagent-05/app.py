@@ -52,17 +52,20 @@ def send_message(user_message: str, history: list, thread_state: dict):
 
     waiting = thread_state.get("waiting_for_interrupt", False)
     thread_id = thread_state.get("thread_id")
-    config = {"configurable": {"thread_id": thread_id}}
 
-    history.append({"role": "user", "content": user_message})
+    # Create thread_id once per session — reuse it for all follow-up messages so
+    # customer_id and conversation state persist across turns via the checkpoint.
+    if not thread_id:
+        thread_id = str(uuid.uuid4())
+        thread_state["thread_id"] = thread_id
+
+    config = {"configurable": {"thread_id": thread_id}}
+    history = history + [{"role": "user", "content": user_message}]
 
     try:
-        if waiting and thread_id:
+        if waiting:
             result = graph.invoke(Command(resume=user_message), config=config)
         else:
-            thread_id = str(uuid.uuid4())
-            thread_state["thread_id"] = thread_id
-            config = {"configurable": {"thread_id": thread_id}}
             result = graph.invoke(
                 {"messages": [HumanMessage(content=user_message)]},
                 config=config,
@@ -70,7 +73,7 @@ def send_message(user_message: str, history: list, thread_state: dict):
 
         if result.get("__interrupt__"):
             thread_state["waiting_for_interrupt"] = True
-            bot_message = _last_ai_message(result) or "Please provide your phone number."
+            bot_message = _last_ai_message(result) or "Please provide your phone number to verify your account."
         else:
             thread_state["waiting_for_interrupt"] = False
             bot_message = _last_ai_message(result) or "(No response)"
@@ -79,11 +82,12 @@ def send_message(user_message: str, history: list, thread_state: dict):
         thread_state["waiting_for_interrupt"] = False
         bot_message = f"⚠️ Error: {exc}"
 
-    history.append({"role": "assistant", "content": bot_message})
+    history = history + [{"role": "assistant", "content": bot_message}]
     return "", history, thread_state
 
 
 def new_conversation(_history: list, _thread_state: dict):
+    """Reset to a clean state — new thread_id means fresh verification."""
     return [], {"thread_id": None, "waiting_for_interrupt": False}
 
 
@@ -93,11 +97,24 @@ DESCRIPTION = """\
 **PlumberBot Multi-Agent** — AI-powered plumbing service assistant.
 
 Three specialist subagents, routed by a supervisor:
-- **Scheduling** — book appointments, check services & pricing
-- **Dispatch** — create tickets, handle emergencies, on-call plumber
-- **Knowledge** — DIY how-to tips from the plumbing knowledge base
+- 🗓️ **Scheduling** — book appointments, check services & pricing
+- 🚨 **Dispatch** — create tickets, handle emergencies, on-call plumber
+- 📚 **Knowledge** — DIY how-to tips from the plumbing knowledge base
 
-*Your account is verified by phone number. Say your phone to get started.*
+**Getting started:** Provide your phone number in your first message to verify your account.
+Once verified, your identity is remembered for the rest of the conversation — no need to repeat it.
+
+**Test accounts** — use any of these phone numbers:
+| Name | Phone |
+|---|---|
+| Jane Doe | (555) 111-2222 |
+| Bob Smith | (555) 333-4444 |
+| Maria Garcia | (555) 555-6666 |
+"""
+
+SEQUENCE_NOTE = """\
+**💡 Try these in sequence** — click an example, press Send, then click the next one.
+Your identity is verified once and remembered for the whole conversation.
 """
 
 with gr.Blocks(title="PlumberBot Multi-Agent 🔧") as demo:
@@ -108,7 +125,7 @@ with gr.Blocks(title="PlumberBot Multi-Agent 🔧") as demo:
 
     chatbot = gr.Chatbot(
         height=480,
-        placeholder="Tell us your phone number and how we can help...",
+        placeholder="Provide your phone number and tell us how we can help...",
         show_label=False,
     )
 
@@ -123,22 +140,29 @@ with gr.Blocks(title="PlumberBot Multi-Agent 🔧") as demo:
 
     new_btn = gr.Button("🔄 New Conversation", variant="secondary", size="sm")
 
+    gr.Markdown(SEQUENCE_NOTE)
+
     gr.Examples(
         examples=[
-            "My phone is (555) 111-2222. I need to book a drain cleaning.",
-            "My number is (555) 333-4444. Do I have any open tickets?",
-            "My phone is (555) 111-2222. How do I fix a running toilet?",
-            "My number is (555) 555-6666. What services do you offer and what are the prices?",
-            "My phone is (555) 111-2222. I have a burst pipe at home — what should I do?",
+            # Step 1: verify identity
+            "Hi, my phone number is (555) 111-2222",
+            # Step 2: scheduling — service catalog
+            "What plumbing services do you offer and what are the prices?",
+            # Step 3: scheduling — book an appointment
+            "I'd like to book a drain cleaning. Who's available?",
+            # Step 4: knowledge — DIY how-to
+            "How do I fix a running toilet myself?",
+            # Step 5: dispatch — create a ticket
+            "I have a persistent slow drain. Can you raise a service ticket for me?",
         ],
         inputs=msg_box,
-        label="Try these examples:",
+        label="Example conversation (use in order ↓):",
     )
 
     gr.Markdown(
-        "_Conversation state persists within the container session. "
-        "Long-term memory (preferences, history) is saved to the business database._",
-        elem_classes=["footer-note"],
+        "_Conversation state persists within the session via SQLite checkpoints. "
+        "Long-term preferences are saved to the business database across sessions. "
+        "Click **New Conversation** to start fresh._",
     )
 
     send_btn.click(
