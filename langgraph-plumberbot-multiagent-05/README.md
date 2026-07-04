@@ -50,14 +50,27 @@ START
 
 ## LangGraph concepts demonstrated
 
+Two ReAct agent patterns are demonstrated side by side, mirroring the 201 notebook:
+
+| Pattern | Used by | Key idea |
+|---|---|---|
+| **Scratch-built ReAct** | scheduling subagent | `llm.bind_tools()` + `ToolNode` + `StateGraph` wired by hand |
+| **`create_react_agent`** | dispatch, knowledge, supervisor | prebuilt shortcut — same graph structure, less boilerplate |
+
+Both compile to identical underlying graphs. The scratch-built version makes the internals explicit.
+
 | Concept | Where |
 |---|---|
-| `create_react_agent` | All 4 agents (`agents/`) |
+| `ToolNode` (manual ReAct) | `agents/scheduling.py` — `_tool_node = ToolNode(scheduling_tools)` |
+| `llm.bind_tools()` | `agents/scheduling.py` — bound once at module level |
+| `should_continue` edge | `agents/scheduling.py:_should_continue` |
+| `create_react_agent` | `agents/dispatch.py`, `agents/knowledge.py`, `agents/supervisor.py` |
 | `InjectedState` | All DB tools — auto-injects `customer_id` from graph state |
+| `ToolNode` + `InjectedState` | `ToolNode` reads the graph state and injects annotated values automatically |
 | Supervisor → subagent-as-tool | `agents/supervisor.py` — subagents called inside `@tool` |
 | Customer verification + HITL | `nodes.py:verify_customer` + `human_input` |
 | Long-term memory (SQL) | `nodes.py:load_memory`, `save_memory` + `customer_profile` |
-| RAG subagent | `knowledge.py` — `InMemoryVectorStore` + OpenAI embeddings |
+| RAG dual backend | `knowledge.py:get_retriever` — OpenAI vector or BM25 |
 | Messages-based state | `Annotated[list[AnyMessage], add_messages]` |
 | `InputState` schema | Restricts external callers to `messages` only |
 | `SqliteSaver` checkpoint | `app.py` — persists threads across page refreshes |

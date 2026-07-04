@@ -53,19 +53,32 @@ cli.py              — MemorySaver (in-memory); handles interrupt via result["_
 app.py              — SqliteSaver; Gradio UI; same gr.State pattern as hugging-04
 ```
 
+## Two ReAct agent patterns demonstrated side by side
+
+Mirrors the notebook (201/multi_agent.ipynb) which shows both approaches:
+
+| Pattern | Subagent | File |
+|---|---|---|
+| **Scratch-built** — `ToolNode` + `StateGraph` wired manually | scheduling | `agents/scheduling.py` |
+| **`create_react_agent`** — prebuilt shortcut | dispatch, knowledge, supervisor | `agents/dispatch.py`, `agents/knowledge.py`, `agents/supervisor.py` |
+
+Both compile to the same underlying graph structure. The scratch-built version makes the internals explicit: `scheduling_assistant` node (LLM with tools bound) → `tools` node (`ToolNode`) → back to `scheduling_assistant` via conditional edge.
+
 ## LangGraph concepts demonstrated
 
 | Concept | File:line |
 |---|---|
-| `create_react_agent` | `agents/*.py` — all 4 agents (3 subagents + supervisor) |
+| ReAct from scratch: `ToolNode` + `StateGraph` | `agents/scheduling.py` |
+| `llm.bind_tools()` | `agents/scheduling.py:_llm_with_tools` |
+| `ToolNode` (auto-handles `InjectedState`) | `agents/scheduling.py:_tool_node` |
+| `should_continue` conditional edge | `agents/scheduling.py:_should_continue` |
+| `create_react_agent` shortcut | `agents/dispatch.py`, `agents/knowledge.py`, `agents/supervisor.py` |
 | `InjectedState("customer_id")` | `tools/scheduling.py`, `tools/dispatch.py`, `agents/supervisor.py` |
 | Supervisor → subagent-as-tool | `agents/supervisor.py` — subagents called via `.invoke()` inside `@tool` |
-| `state_schema=PlumberState` | All `create_react_agent` calls — makes customer_id available in agent state |
 | `InputState` / `PlumberState` | `state.py` — two-tier schema restricts external callers to `messages` only |
-| `messages: Annotated[list[AnyMessage], add_messages]` | `state.py` — conversational vs single-shot |
+| `remaining_steps: RemainingSteps` | `state.py` — required by `create_react_agent` in newer LangGraph |
 | HITL verification loop | `nodes.py:verify_customer` + `human_input` → loop back |
 | Long-term memory (SQL) | `nodes.py:load_memory`, `save_memory` + `customer_profile` table |
-| Dynamic prompt function | `agents/scheduling.py:_make_prompt` — injects loaded_memory into system message |
 | RAG dual backend | `knowledge.py:get_retriever` — OpenAI vector or BM25, auto-selected |
 | Lazy initialization | `knowledge.py:get_retriever` — builds on first call, not at import |
 
