@@ -22,6 +22,10 @@ load_dotenv()
 # ── SQLite checkpointer (lives for the server process lifetime) ───────────────
 
 DB_PATH = os.getenv("DB_PATH", "/tmp/plumberbot.db")
+db_dir = os.path.dirname(DB_PATH)
+if db_dir and not os.path.isdir(db_dir):
+    print(f"WARNING: {db_dir} does not exist, falling back to /tmp/plumberbot.db")
+    DB_PATH = "/tmp/plumberbot.db"
 _conn = sqlite3.connect(DB_PATH, check_same_thread=False)
 _checkpointer = SqliteSaver(_conn)
 graph = build_graph(checkpointer=_checkpointer)
