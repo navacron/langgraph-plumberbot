@@ -81,28 +81,28 @@ In your Space settings → **Variables and secrets** → **New secret**:
 
 ### Step 3 — Push the code
 
-HF Spaces is a git repository. Clone it and push this project's code:
+This project lives in a monorepo. Use `git subtree push` to push **only this
+subfolder** to HF Spaces — no cloning, no code duplication. Run from the
+monorepo root:
 
 ```bash
-# Clone the Space's git repo (replace <your-username> and <space-name>)
-git clone https://huggingface.co/spaces/<your-username>/<space-name>
-cd <space-name>
+cd /path/to/langgraph-plumberbot   # monorepo root
 
-# Copy this project's files into the Space repo
-cp -r /path/to/langgraph-plumberbot-hugging-04/. .
+# One-time: add the HF Space as a second remote
+git remote add space https://huggingface.co/spaces/<your-username>/<space-name>
 
-# Commit and push — HF will auto-build the Docker image
-git add .
-git commit -m "initial PlumberBot deployment"
-git push
+# Push just the hugging-04 subfolder (its contents become the Space root)
+git subtree push --prefix langgraph-plumberbot-hugging-04 space main
 ```
 
-Or add the Space as a second remote to this repo:
+HF receives `Dockerfile`, `app.py`, `plumberbot/`, etc. at the repo root —
+exactly where it expects them. Your GitHub remote (`origin`) is unchanged.
+
+**On future updates**, push to both remotes:
 
 ```bash
-cd langgraph-plumberbot-hugging-04
-git remote add space https://huggingface.co/spaces/<your-username>/<space-name>
-git push space main
+git push origin main                                                    # GitHub
+git subtree push --prefix langgraph-plumberbot-hugging-04 space main   # HF Space
 ```
 
 ### Step 4 — Watch the build
