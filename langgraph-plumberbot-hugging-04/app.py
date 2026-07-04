@@ -137,14 +137,13 @@ Handles three types of requests:
 *Powered by LangGraph + Claude. Conversation state persists via SQLite.*
 """
 
-with gr.Blocks(title="PlumberBot 🔧", theme=gr.themes.Soft()) as demo:
+with gr.Blocks(title="PlumberBot 🔧") as demo:
     gr.Markdown("# 🔧 PlumberBot")
     gr.Markdown(DESCRIPTION)
 
     thread_state = gr.State({"thread_id": None, "waiting_for_interrupt": False})
 
     chatbot = gr.Chatbot(
-        type="messages",
         height=450,
         placeholder="Start by describing your plumbing issue...",
         show_label=False,
@@ -194,4 +193,4 @@ with gr.Blocks(title="PlumberBot 🔧", theme=gr.themes.Soft()) as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    demo.launch(server_name="0.0.0.0", server_port=7860, theme=gr.themes.Soft())
