@@ -14,3 +14,7 @@ build/
 /tmp/
 plumberbot_checkpoints.db
 *_checkpoints.db
+
+# Embeddings cache — ignored by default so local builds don't pollute git.
+# To ship a pre-computed cache: git add -f embeddings_cache.pkl
+embeddings_cache.pkl

@@ -20,6 +20,7 @@ from langgraph.types import Command
 load_dotenv()
 
 from plumberbot.graph import build_graph  # noqa: E402
+from plumberbot.knowledge import rebuild_embeddings_cache, EMBEDDINGS_CACHE_PATH  # noqa: E402
 
 # ── Checkpoint DB (short-term, per-thread conversation state) ─────────────────
 
@@ -150,7 +151,23 @@ with gr.Blocks(title="PlumberBot Multi-Agent 🔧") as demo:
         )
         send_btn = gr.Button("Send", scale=1, variant="primary")
 
-    new_btn = gr.Button("🔄 New Conversation", variant="secondary", size="sm")
+    with gr.Row():
+        new_btn = gr.Button("🔄 New Conversation", variant="secondary", size="sm")
+        if os.getenv("OPENAI_API_KEY"):
+            _cache_exists = os.path.exists(EMBEDDINGS_CACHE_PATH)
+            _cache_label = (
+                f"🧠 Embeddings cached ({os.path.basename(EMBEDDINGS_CACHE_PATH)})"
+                if _cache_exists else "🧠 Build Embeddings Cache"
+            )
+            rebuild_btn = gr.Button(_cache_label, variant="secondary", size="sm")
+            rebuild_status = gr.Textbox(
+                value="",
+                label="Knowledge base status",
+                interactive=False,
+                show_label=False,
+                scale=3,
+            )
+            rebuild_btn.click(rebuild_embeddings_cache, outputs=[rebuild_status])
 
     gr.Markdown(SEQUENCE_NOTE)
 
