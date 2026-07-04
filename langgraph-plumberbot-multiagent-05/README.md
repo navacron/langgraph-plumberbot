@@ -96,7 +96,11 @@ Five plumbing how-to articles loaded into an in-memory vector store at startup:
 | `burst_pipe_emergency.txt` | Immediate steps, shut-off location, temporary fixes |
 | `drain_cleaning_tips.txt` | DIY methods, what not to pour, maintenance schedule |
 
-Embeddings: `text-embedding-3-small` via OpenAI API (requires `OPENAI_API_KEY`).
+**RAG backend — auto-selected at startup:**
+- `OPENAI_API_KEY` set → `InMemoryVectorStore` with `text-embedding-3-small` (semantic search)
+- Anthropic key only → `BM25Retriever` (keyword search, no extra API key needed)
+
+Both backends use the same `search_knowledge_base` tool — the knowledge subagent is unaware of which is active.
 
 ---
 
@@ -227,7 +231,7 @@ In Space settings → **Variables and secrets**:
 | Name | Value | Required |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | `sk-ant-...` | Yes |
-| `OPENAI_API_KEY` | `sk-...` | Yes (for RAG embeddings) |
+| `OPENAI_API_KEY` | `sk-...` | No — enables semantic RAG; without it, BM25 keyword search is used |
 | `ANTHROPIC_MODEL` | `claude-opus-4-8` | No |
 | `CHECKPOINT_DB_PATH` | `/data/plumberbot_checkpoints.db` | Only on Pro tier |
 

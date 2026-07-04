@@ -5,14 +5,14 @@ import os
 
 from langchain_core.tools import tool
 
-from ..knowledge import get_vectorstore
+from ..knowledge import get_retriever
 
 
 @tool
 def search_knowledge_base(query: str) -> str:
     """Search the plumbing knowledge base for how-to tips and troubleshooting guides.
     Use for DIY advice, repair instructions, maintenance tips, and plumbing questions."""
-    results = get_vectorstore().similarity_search(query, k=3)
+    results = get_retriever().invoke(query)
     if not results:
         return "No relevant articles found in the knowledge base."
     sections = [

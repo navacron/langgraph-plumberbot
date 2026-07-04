@@ -1,12 +1,10 @@
-"""Test the RAG knowledge base without an API key.
+"""Test the RAG knowledge base.
 
-These tests verify:
-- All 5 articles load and chunk correctly
-- list_articles() returns expected filenames
-- search_knowledge_base() returns relevant chunks for known queries
+Runs with either backend:
+  - OPENAI_API_KEY set  → semantic vector search (text-embedding-3-small)
+  - Anthropic key only  → BM25 keyword search (no extra key needed)
 
-Requires OPENAI_API_KEY to build the vectorstore (embeddings are called once on import).
-Skip this file if the key is not set.
+All tests pass in both modes. The BM25 backend is the default when OPENAI_API_KEY is absent.
 """
 
 import os
@@ -16,18 +14,17 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-# Skip the entire module if OPENAI_API_KEY is not set
+# Require at least ANTHROPIC_API_KEY (BM25 works without OpenAI)
 pytestmark = pytest.mark.skipif(
-    not os.getenv("OPENAI_API_KEY"),
-    reason="OPENAI_API_KEY not set — skipping RAG tests",
+    not os.getenv("ANTHROPIC_API_KEY"),
+    reason="ANTHROPIC_API_KEY not set — skipping RAG tests",
 )
 
 
 @pytest.fixture(scope="module")
 def tools():
-    # Force vectorstore to build (makes OpenAI embeddings call)
-    from plumberbot.knowledge import get_vectorstore
-    get_vectorstore()
+    from plumberbot.knowledge import get_retriever
+    get_retriever()  # build on first call (vector or BM25)
     from plumberbot.tools.knowledge import knowledge_tools
     return {t.name: t for t in knowledge_tools}
 
