@@ -12,3 +12,6 @@ class PlumberState(InputState):
     customer_id: Optional[int]
     loaded_memory: str
     remaining_steps: RemainingSteps
+    # Registration flow — set when a phone number is looked up but not found
+    pending_phone: Optional[str]
+    pending_name: Optional[str]

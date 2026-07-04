@@ -142,22 +142,31 @@ with gr.Blocks(title="PlumberBot Multi-Agent 🔧") as demo:
 
     gr.Markdown(SEQUENCE_NOTE)
 
-    gr.Examples(
-        examples=[
-            # Step 1: verify identity
-            "Hi, my phone number is (555) 111-2222",
-            # Step 2: scheduling — service catalog
-            "What plumbing services do you offer and what are the prices?",
-            # Step 3: scheduling — book an appointment
-            "I'd like to book a drain cleaning. Who's available?",
-            # Step 4: knowledge — DIY how-to
-            "How do I fix a running toilet myself?",
-            # Step 5: dispatch — create a ticket
-            "I have a persistent slow drain. Can you raise a service ticket for me?",
-        ],
-        inputs=msg_box,
-        label="Example conversation (use in order ↓):",
-    )
+    with gr.Tabs():
+        with gr.Tab("Returning customer"):
+            gr.Markdown("_Use these in sequence — identity is verified once and remembered._")
+            gr.Examples(
+                examples=[
+                    "Hi, my phone number is (555) 111-2222",
+                    "What plumbing services do you offer and what are the prices?",
+                    "I'd like to book a drain cleaning. Who's available?",
+                    "How do I fix a running toilet myself?",
+                    "I have a persistent slow drain. Can you raise a service ticket for me?",
+                ],
+                inputs=msg_box,
+                label=None,
+            )
+        with gr.Tab("New customer registration"):
+            gr.Markdown("_Start a New Conversation first, then use these in sequence._")
+            gr.Examples(
+                examples=[
+                    "Hi, my phone is (555) 888-0000 and my name is Alex Rivera",
+                    "yes",
+                    "What drain cleaning services do you offer?",
+                ],
+                inputs=msg_box,
+                label=None,
+            )
 
     gr.Markdown(
         "_Conversation state persists within the session via SQLite checkpoints. "

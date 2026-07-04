@@ -1,4 +1,4 @@
-"""Outer graph nodes: identity verification, memory load/save, human input interrupt."""
+"""Outer graph nodes: identity verification, new-customer registration, memory load/save."""
 
 from pydantic import BaseModel, Field
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
@@ -9,55 +9,213 @@ from .llm import llm
 from .state import PlumberState
 
 
+# ── Structured-output helpers ─────────────────────────────────────────────────
+
 class _PhoneExtraction(BaseModel):
     phone_number: str = Field(
         description="The customer's phone number exactly as written, or empty string if none found"
     )
 
+class _NameExtraction(BaseModel):
+    name: str = Field(
+        description="The customer's full name (first + last), or empty string if not clearly stated"
+    )
 
-_structured_llm = llm.with_structured_output(_PhoneExtraction)
+class _Confirmation(BaseModel):
+    confirmed: bool = Field(
+        description="True if the user said yes / confirmed / ok / correct, False for no / cancel / decline"
+    )
 
+_phone_llm = llm.with_structured_output(_PhoneExtraction)
+_name_llm  = llm.with_structured_output(_NameExtraction)
+_confirm_llm = llm.with_structured_output(_Confirmation)
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _open_ticket_summary(customer_id: int) -> str:
+    """Return a formatted list of open tickets, or empty string if none."""
+    rows = run_query(
+        "SELECT ticket_id, description, priority FROM tickets "
+        "WHERE customer_id = ? AND status = 'open' ORDER BY created_at DESC",
+        (customer_id,),
+    )
+    if not rows:
+        return ""
+    lines = "\n".join(
+        f"  • Ticket #{t['ticket_id']}: "
+        f"{t['description'][:70]}{'...' if len(t['description']) > 70 else ''} "
+        f"({t['priority']} priority)"
+        for t in rows
+    )
+    n = len(rows)
+    return f"\n\nYou have {n} open ticket{'s' if n > 1 else ''}:\n{lines}"
+
+
+def _extract_phone(text: str) -> str:
+    return _phone_llm.invoke([
+        SystemMessage(content="Extract the phone number from this message exactly as written. Return empty string if none."),
+        HumanMessage(content=text),
+    ]).phone_number
+
+
+def _extract_name(text: str) -> str:
+    return _name_llm.invoke([
+        SystemMessage(content="Extract the customer's full name from this message. Return empty string if not clearly provided."),
+        HumanMessage(content=text),
+    ]).name
+
+
+def _is_confirmed(text: str) -> bool:
+    return _confirm_llm.invoke([
+        SystemMessage(content="Did the user confirm yes? True for yes/confirm/ok/correct/sure, False for no/cancel/decline/wrong."),
+        HumanMessage(content=text),
+    ]).confirmed
+
+
+# ── verify_customer ───────────────────────────────────────────────────────────
 
 def verify_customer(state: PlumberState) -> dict:
-    """Extract phone from the customer's message and look up their account."""
+    """Verify the customer's identity, or register them if they're new.
+
+    The node cycles through up to three stages via the human_input interrupt loop:
+
+    Stage 1 — Extract phone from message:
+      • Found in DB  → welcome + open tickets summary → set customer_id
+      • Not in DB    → store pending_phone, ask for name (or skip to Stage 3
+                       if name was already in the same message)
+      • No phone     → ask for phone number
+
+    Stage 2 — Have pending_phone, waiting for name:
+      • Name given   → store pending_name, show confirmation prompt
+      • No name yet  → re-ask for name
+
+    Stage 3 — Have pending_phone + pending_name, waiting for yes/no:
+      • yes          → INSERT customer, set customer_id, welcome
+      • no           → clear pending state, offer to try again
+    """
     if state.get("customer_id") is not None:
         return {}
 
     messages = state["messages"]
-    latest = messages[-1]
-    latest_content = latest.content if hasattr(latest, "content") else str(latest)
+    latest_content = (messages[-1].content
+                      if hasattr(messages[-1], "content") else str(messages[-1]))
 
-    extraction = _structured_llm.invoke([
-        SystemMessage(content="Extract the phone number from this message. Return empty string if none."),
-        HumanMessage(content=latest_content),
-    ])
+    pending_phone = state.get("pending_phone")
+    pending_name  = state.get("pending_name")
 
-    if extraction.phone_number:
-        rows = run_query(
-            "SELECT customer_id, name FROM customers WHERE phone = ?",
-            (extraction.phone_number,),
-        )
-        if rows:
-            cust = rows[0]
+    # ── Stage 3: confirmation ─────────────────────────────────────────────────
+    if pending_phone and pending_name:
+        if _is_confirmed(latest_content):
+            conn = get_db_connection()
+            cur = conn.execute(
+                "INSERT INTO customers (name, phone) VALUES (?, ?)",
+                (pending_name, pending_phone),
+            )
+            conn.commit()
+            new_id = cur.lastrowid
             return {
-                "customer_id": cust["customer_id"],
+                "customer_id": new_id,
+                "pending_phone": None,
+                "pending_name": None,
                 "messages": [AIMessage(
-                    content=f"Welcome back, {cust['name']}! I've verified your account. How can I help you today?"
+                    f"Account created! Welcome, {pending_name}. "
+                    f"Your account is now active. How can I help you today?"
+                )],
+            }
+        else:
+            return {
+                "pending_phone": None,
+                "pending_name": None,
+                "messages": [AIMessage(
+                    "No problem — registration cancelled. "
+                    "If you'd like to try again, just share your phone number."
                 )],
             }
 
-    # No phone found or phone not in DB — prompt the customer
+    # ── Stage 2: have phone, waiting for name ────────────────────────────────
+    if pending_phone and not pending_name:
+        name = _extract_name(latest_content)
+        if name:
+            return {
+                "pending_name": name,
+                "messages": [AIMessage(
+                    f"Got it! I'll create a new account for **{name}** "
+                    f"with phone number **{pending_phone}**. "
+                    f"Does that look right? (yes / no)"
+                )],
+            }
+        # Name not yet provided — re-ask
+        response = llm.invoke([
+            SystemMessage(content=(
+                "You are a PlumberBot agent registering a new customer. "
+                "Their phone number was not found in our system. "
+                "Ask them for their full name (first and last) to create their account. "
+                "Keep it to one friendly sentence."
+            )),
+            *messages,
+        ])
+        return {"messages": [response]}
+
+    # ── Stage 1: extract phone from message ───────────────────────────────────
+    phone = _extract_phone(latest_content)
+
+    if phone:
+        rows = run_query(
+            "SELECT customer_id, name FROM customers WHERE phone = ?", (phone,)
+        )
+
+        if rows:
+            # ── Existing customer ─────────────────────────────────────────────
+            cust = rows[0]
+            ticket_summary = _open_ticket_summary(cust["customer_id"])
+            welcome = (
+                f"Welcome back, {cust['name']}! I've verified your account."
+                + ticket_summary
+                + "\n\nHow can I help you today?"
+            )
+            return {
+                "customer_id": cust["customer_id"],
+                "messages": [AIMessage(content=welcome)],
+            }
+
+        # ── Phone not in DB — start registration ──────────────────────────────
+        # Optimisation: check if name is also in the same message so we can
+        # skip Stage 2 and jump straight to confirmation.
+        name = _extract_name(latest_content)
+        if name:
+            return {
+                "pending_phone": phone,
+                "pending_name": name,
+                "messages": [AIMessage(
+                    f"I couldn't find an account with **{phone}**. "
+                    f"I'd like to create a new account for **{name}** "
+                    f"with that number. Does that look right? (yes / no)"
+                )],
+            }
+        return {
+            "pending_phone": phone,
+            "messages": [AIMessage(
+                f"I couldn't find an account with **{phone}**. "
+                f"Would you like to create a new account? "
+                f"If so, please tell me your full name."
+            )],
+        }
+
+    # ── No phone in message — ask for it ─────────────────────────────────────
     response = llm.invoke([
         SystemMessage(content=(
             "You are a PlumberBot agent. Your only job right now is account verification. "
-            "Ask the customer for their phone number (the one on their account) in one short sentence. "
-            "If they just provided a phone number that wasn't found, tell them it wasn't found "
-            "and ask them to double-check it. Do NOT address their actual request yet."
+            "Ask the customer for the phone number on their account in one short sentence. "
+            "If they have no account, let them know they can create one by providing their "
+            "name and phone number. Do NOT address their actual request yet."
         )),
         *messages,
     ])
     return {"messages": [response]}
 
+
+# ── human_input ───────────────────────────────────────────────────────────────
 
 def human_input(state: PlumberState) -> dict:
     """No-op interrupt node — pauses the graph and waits for user input."""
@@ -68,6 +226,8 @@ def human_input(state: PlumberState) -> dict:
 def should_interrupt(state: PlumberState) -> str:
     return "continue" if state.get("customer_id") is not None else "interrupt"
 
+
+# ── load_memory ───────────────────────────────────────────────────────────────
 
 def load_memory(state: PlumberState) -> dict:
     """Load customer preferences and service history from customer_profile table."""
@@ -86,6 +246,8 @@ def load_memory(state: PlumberState) -> dict:
         memory = ""
     return {"loaded_memory": memory}
 
+
+# ── save_memory ───────────────────────────────────────────────────────────────
 
 class _CustomerMemory(BaseModel):
     preferences: str = Field(
