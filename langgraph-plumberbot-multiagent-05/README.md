@@ -104,6 +104,27 @@ Both backends use the same `search_knowledge_base` tool — the knowledge subage
 
 ---
 
+## Setup
+
+### API keys
+
+This project needs **one required key** and one **optional key** that upgrades the RAG backend:
+
+| Key | Required | Used for |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | **Yes** | All LLM generation — classification, responses, memory extraction |
+| `OPENAI_API_KEY` | No | RAG embeddings (`text-embedding-3-small`) — upgrades knowledge search from keyword to semantic |
+
+**With `ANTHROPIC_API_KEY` only:**
+The knowledge subagent uses **BM25 keyword search**. Works well for the plumbing corpus because the articles have specific technical vocabulary ("flapper", "P-trap", "anode rod"). All other features (scheduling, dispatch, memory, verification) are unaffected.
+
+**With both keys:**
+The knowledge subagent uses **OpenAI semantic vector search** (`text-embedding-3-small`, ~$0.00002 per query). Embeddings are generated once at startup and cached in memory for the session.
+
+> Anthropic does not currently offer an embeddings API — it focuses exclusively on generation models.
+
+---
+
 ## Local development
 
 ### 1 — Install dependencies
@@ -119,9 +140,26 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env and set:
-#   ANTHROPIC_API_KEY=sk-ant-...
-#   OPENAI_API_KEY=sk-...
+```
+
+Edit `.env` and set your keys. **Minimum (Anthropic only — BM25 knowledge search):**
+
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+**Full setup (Anthropic + OpenAI — semantic vector knowledge search):**
+
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+```
+
+You can confirm which RAG backend was selected by checking the startup log:
+```
+[knowledge] RAG backend: OpenAI vector (text-embedding-3-small) — 65 chunks loaded
+# or
+[knowledge] RAG backend: BM25 keyword (no API key required) — 65 chunks loaded
 ```
 
 ### 3 — Run the CLI
