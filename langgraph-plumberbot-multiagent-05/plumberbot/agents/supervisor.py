@@ -38,7 +38,16 @@ def _make_supervisor_prompt(state: PlumberState) -> list:
     system = _SUPERVISOR_PROMPT
     if memory:
         system += f"\n\nCustomer profile:\n{memory}"
-    return [SystemMessage(content=system)] + list(state["messages"])
+    msgs = list(state["messages"])
+    # Anthropic requires the conversation to end with a human message.
+    # After verify_customer adds its welcome AIMessage, the state ends with an AI
+    # message and no new human request — inject a nudge so the model has a
+    # clear human turn to respond to instead of doing message-prefilling.
+    if msgs and getattr(msgs[-1], "type", "") != "human":
+        msgs = msgs + [HumanMessage(
+            content="Please address my plumbing request based on the conversation above."
+        )]
+    return [SystemMessage(content=system)] + msgs
 
 
 def build_supervisor():

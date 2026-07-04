@@ -38,8 +38,20 @@ graph = build_graph(checkpointer=_checkpointer)
 
 def _last_ai_message(result: dict) -> str:
     for msg in reversed(result.get("messages", [])):
-        if hasattr(msg, "content") and getattr(msg, "type", "") == "ai":
-            return msg.content
+        if getattr(msg, "type", "") != "ai":
+            continue
+        content = getattr(msg, "content", "")
+        # Claude API sometimes returns content as a list of typed blocks
+        if isinstance(content, list):
+            text = " ".join(
+                block["text"] for block in content
+                if isinstance(block, dict) and block.get("type") == "text" and block.get("text")
+            ).strip()
+            if text:
+                return text
+        elif isinstance(content, str) and content:
+            # Skip empty-content tool-call-only AI messages (Anthropic prefill artefacts)
+            return content
     return ""
 
 
