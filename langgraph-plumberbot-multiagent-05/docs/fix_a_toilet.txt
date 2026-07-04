@@ -1,0 +1,83 @@
+How to Fix Common Toilet Problems
+==================================
+
+Most toilet problems are caused by a handful of simple mechanical failures inside the tank. Understanding what each part does makes diagnosis straightforward.
+
+TANK COMPONENTS OVERVIEW
+--------------------------
+- Fill valve (ballcock): refills the tank after each flush
+- Flapper: rubber seal that opens to flush and closes to hold water in the tank
+- Float: tells the fill valve when the tank is full
+- Flush handle and chain: lifts the flapper when you flush
+- Overflow tube: prevents the tank from overflowing by draining excess water
+
+RUNNING TOILET (WATER CONSTANTLY TRICKLING)
+---------------------------------------------
+The most common cause is a faulty flapper or a float set too high.
+
+Test 1 — Flapper leak:
+1. Add a few drops of food coloring to the tank (do not flush).
+2. Wait 10 minutes.
+3. If color appears in the bowl without flushing, the flapper is leaking.
+Fix: Turn off the water supply valve. Flush to empty the tank. Unhook the old flapper from the two side pegs and detach the chain. Take the old flapper to a hardware store to match the size and material. Install the new flapper and reconnect the chain (leave 1/2 inch of slack).
+
+Test 2 — Float too high:
+1. Look inside the tank. If water is spilling into the overflow tube, the float is set too high.
+Fix: Bend the float arm downward slightly (older ball-float style), or turn the adjustment screw on a cup-float to lower the water level. The water line should sit about 1 inch below the top of the overflow tube.
+
+WEAK OR INCOMPLETE FLUSH
+--------------------------
+Causes: clogged rim jets, low water level, or a worn flapper that closes too quickly.
+
+Fix — Adjust water level: The tank should fill to about 1 inch below the overflow tube. Adjust the float upward to raise the water level.
+
+Fix — Clean rim jets: Mineral deposits can clog the small holes under the toilet rim. Use a small wire (like a bent coat hanger) or a dental pick to clear them. Pour white vinegar into the overflow tube and let sit for an hour to dissolve deposits.
+
+Fix — Adjust the chain length: If the chain is too long, it can get caught under the flapper and prevent a complete seal. Shorten it so there is only about 1/2 inch of slack.
+
+TOILET NOT FLUSHING AT ALL
+----------------------------
+1. Check if the handle is broken or disconnected from the chain.
+2. Make sure the water supply valve behind the toilet is fully open.
+3. Check if the chain has come unhooked from the flapper.
+
+CLOGGED TOILET
+---------------
+Method 1 — Plunger:
+1. Use a flange plunger (cup-shaped, not flat). Insert it so the flange goes into the drain hole.
+2. Push down slowly to expel air, then pull back sharply to create suction.
+3. Repeat 10–15 times with vigorous pumping.
+4. Flush to test. Repeat if needed.
+
+Method 2 — Toilet auger (closet snake):
+1. Insert the rubber-coated cable into the bowl opening.
+2. Crank the handle clockwise while pushing gently.
+3. When the blockage clears, pull the snake back slowly (rotating as you go).
+4. Flush to clear.
+
+Never use chemical drain cleaners in a toilet — they can crack the porcelain and damage seals.
+
+TOILET ROCKING OR LEAKING AT THE BASE
+---------------------------------------
+Water or a bad smell at the base indicates a failed wax ring seal.
+This is a moderately advanced repair:
+1. Turn off the water supply and flush to empty the tank.
+2. Disconnect the supply line and unbolts from the floor bolts.
+3. Lift the toilet off and set aside.
+4. Scrape off the old wax ring from both the flange and the toilet horn.
+5. Press a new wax ring onto the toilet horn, then lower the toilet onto the flange bolts.
+6. Press down firmly, bolt down, reconnect supply, and test.
+Recommendation: If the flange is cracked or the floor is damaged, call a plumber.
+
+WHEN TO CALL A PROFESSIONAL
+-----------------------------
+- Water is leaking from the tank-to-bowl connection (bolts or gasket failure).
+- The toilet flushes slowly and drain cleaning hasn't helped — could be a venting issue.
+- Multiple toilets or drains are backing up simultaneously.
+- You see sewage or smell sewer gas — evacuate and call immediately.
+
+MAINTENANCE TIPS
+-----------------
+- Never flush wipes (even "flushable" ones), paper towels, cotton balls, or dental floss.
+- Check the flapper annually — they degrade over time and cause hidden water waste.
+- A running toilet can waste 200 gallons per day. Fix it promptly.

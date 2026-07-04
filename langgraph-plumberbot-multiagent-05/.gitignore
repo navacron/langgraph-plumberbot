@@ -1,0 +1,16 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.DS_Store
+
+# Runtime checkpoint DB (not business data — not committed)
+/tmp/
+plumberbot_checkpoints.db
+*_checkpoints.db

@@ -1,0 +1,84 @@
+How to Troubleshoot and Maintain Your Water Heater
+====================================================
+
+A water heater typically lasts 8–12 years. Many common problems can be diagnosed at home, though repairs often require a licensed plumber — especially for gas heaters or electrical work.
+
+TYPES OF WATER HEATERS
+------------------------
+- Tank water heater (most common): stores 30–80 gallons of hot water; heated by gas burner or electric elements
+- Tankless (on-demand): heats water as needed; more efficient but more complex to service
+- Heat pump water heater: very efficient; extracts heat from the air
+
+This guide focuses on traditional tank water heaters.
+
+NO HOT WATER
+-------------
+For gas heaters:
+1. Check that the gas supply valve is open (handle parallel to the pipe).
+2. Look through the pilot window — is the pilot light on?
+3. To relight a pilot: set the control knob to PILOT, press and hold it, use a long lighter to ignite at the pilot opening, keep holding for 30–60 seconds after ignition, then release slowly.
+4. If the pilot won't stay lit, the thermocouple (safety sensor) is likely faulty. Replacement cost: $20–$50 in parts; a plumber can do this in under an hour.
+5. If the gas supply is confirmed and the pilot won't light at all, call a professional — there may be a gas supply issue.
+
+For electric heaters:
+1. Check your breaker box — reset the breaker if it tripped.
+2. Many electric heaters have a high-temperature reset button near the thermostat (under an access panel). Press it once.
+3. If water is still cold after 2 hours, one or both heating elements may have burned out. Replacement requires draining the tank and is best handled by a plumber.
+
+NOT ENOUGH HOT WATER
+---------------------
+1. Thermostat setting: Recommended setting is 120°F (49°C). Too low = lukewarm water. Too high = scalding risk.
+   - Gas: adjust the dial on the gas valve directly.
+   - Electric: turn off the breaker, remove the access panels, adjust the thermostat behind the insulation.
+2. Tank undersized for demand: Consider a larger tank or tankless heater.
+3. Sediment buildup (see Maintenance section below).
+4. Failing heating element: bottom element often fails first in electric heaters.
+
+RUSTY OR DISCOLORED WATER
+--------------------------
+Brown or rusty water indicates one of two issues:
+- Corroding sacrificial anode rod: the rod inside the tank protects the tank from rust. It needs replacement every 3–5 years.
+- Tank itself is corroding: this means the heater is near end-of-life and should be replaced. Do not ignore this — a corroding tank can fail and flood your home.
+
+POPPING OR RUMBLING NOISE
+--------------------------
+Sediment (mineral deposits) builds up on the bottom of the tank over time and causes noises as water bubbles through it. Flushing the tank annually prevents this.
+
+Flush procedure:
+1. Turn off the heater (gas: set to PILOT; electric: flip the breaker).
+2. Connect a garden hose to the drain valve at the bottom of the tank.
+3. Run the other end to a floor drain or outside.
+4. Open a hot water tap inside to prevent vacuum lock.
+5. Open the drain valve and let the tank empty.
+6. Open the cold water supply briefly to stir up remaining sediment, then drain again.
+7. Close the drain valve, remove the hose, let the tank refill, then restart the heater.
+Frequency: annually in areas with hard water; every 2 years elsewhere.
+
+ANODE ROD REPLACEMENT
+-----------------------
+The anode rod is a magnesium or aluminum rod that corrodes in place of the tank. Replacing it every 3–5 years dramatically extends tank life.
+1. Turn off the heater and cold water supply. Open a hot water tap to reduce pressure.
+2. Locate the anode rod — usually on top of the heater, sometimes under the sheet metal top panel.
+3. Use a 1-1/16 inch socket and breaker bar to unscrew it.
+4. Inspect: if it's less than 1/2 inch in diameter or heavily corroded, replace it.
+5. Wrap threads with Teflon tape, install the new rod, and tighten.
+
+TEMPERATURE AND PRESSURE RELIEF VALVE
+----------------------------------------
+The T&P valve is a safety device that opens if pressure or temperature becomes dangerously high.
+- Test annually: lift the lever briefly and let it snap back. Water should discharge into the drain pipe.
+- If it drips continuously, it needs replacement (about $20, straightforward for a plumber).
+- Never cap or remove the T&P valve — this is a serious safety hazard.
+
+WHEN TO CALL A PROFESSIONAL
+-----------------------------
+- Gas smell near the heater (leave the house and call your gas company)
+- Water leaking from the tank body (not fittings) — tank must be replaced
+- Electric wiring issues or no power after resetting breaker
+- Tankless heater error codes
+- Any repair on a heater still under warranty (DIY may void it)
+
+EXPECTED LIFESPAN AND REPLACEMENT
+-----------------------------------
+- Tank heater: 8–12 years. Signs it's time to replace: rust in water, pooling water at the base, frequent repairs, age over 10 years.
+- Ask PlumberBot about water heater installation — we supply and install all major brands.
