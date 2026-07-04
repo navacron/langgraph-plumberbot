@@ -13,7 +13,7 @@ from langgraph.prebuilt import ToolNode
 from langchain_core.messages import SystemMessage
 
 from ..llm import llm
-from ..state import InputState, PlumberState
+from ..state import PlumberState
 from ..tools.scheduling import scheduling_tools
 
 _PROMPT = """\
@@ -64,8 +64,13 @@ def _should_continue(state: PlumberState) -> str:
 # ── graph factory ──────────────────────────────────────────────────────────────
 
 def build_scheduling_subagent():
-    """Wire the ReAct loop manually: assistant → tools → assistant → … → END."""
-    graph = StateGraph(PlumberState, input=InputState)
+    """Wire the ReAct loop manually: assistant → tools → assistant → … → END.
+
+    Note: no input=InputState here — the subagent is called internally by the
+    supervisor which passes the full PlumberState (including customer_id).
+    input=InputState is only appropriate on the outer graph for external callers.
+    """
+    graph = StateGraph(PlumberState)
 
     graph.add_node("scheduling_assistant", _scheduling_assistant)
     graph.add_node("tools", _tool_node)
