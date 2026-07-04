@@ -31,6 +31,9 @@ git remote add space https://huggingface.co/spaces/<username>/<space-name>
 # Push just the subfolder (its contents become the Space root)
 git subtree push --prefix langgraph-plumberbot-<name>-<n> space main
 
+# If HF rejects (it auto-creates a stub commit on new Spaces):
+git push space `git subtree split --prefix langgraph-plumberbot-<name>-<n>`:main --force
+
 # Future updates
 git push origin main
 git subtree push --prefix langgraph-plumberbot-<name>-<n> space main

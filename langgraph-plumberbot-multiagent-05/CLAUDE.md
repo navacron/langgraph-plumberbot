@@ -131,6 +131,9 @@ python -m pytest tests/test_rag.py -v     # needs ANTHROPIC_API_KEY at minimum
 # From monorepo root
 git remote add space https://huggingface.co/spaces/<username>/<space-name>
 git subtree push --prefix langgraph-plumberbot-multiagent-05 space main
+
+# If HF rejects (auto-created stub commit on new Spaces):
+git push space `git subtree split --prefix langgraph-plumberbot-multiagent-05`:main --force
 ```
 
 Add `ANTHROPIC_API_KEY` (required) and `OPENAI_API_KEY` (optional) as Secrets in Space settings.

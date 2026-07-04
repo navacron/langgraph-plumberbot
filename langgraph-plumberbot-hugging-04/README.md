@@ -95,6 +95,11 @@ git remote add space https://huggingface.co/spaces/<your-username>/<space-name>
 git subtree push --prefix langgraph-plumberbot-hugging-04 space main
 ```
 
+If HF rejects the push (it auto-creates a stub commit when you create a new Space):
+```bash
+git push space `git subtree split --prefix langgraph-plumberbot-hugging-04`:main --force
+```
+
 HF receives `Dockerfile`, `app.py`, `plumberbot/`, etc. at the repo root —
 exactly where it expects them. Your GitHub remote (`origin`) is unchanged.
 

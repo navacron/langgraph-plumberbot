@@ -67,6 +67,9 @@ git remote add space https://huggingface.co/spaces/<username>/<space-name>
 
 # Push just this subfolder
 git subtree push --prefix langgraph-plumberbot-hugging-04 space main
+
+# If HF rejects (auto-created stub commit on new Spaces):
+git push space `git subtree split --prefix langgraph-plumberbot-hugging-04`:main --force
 ```
 
 Add `ANTHROPIC_API_KEY` as a Secret in the Space settings (Variables and secrets tab).
